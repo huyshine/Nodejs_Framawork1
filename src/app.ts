@@ -6,7 +6,8 @@ import cors from 'cors';
 
 import authRouter from "./routes/auth";
 import productRouter from "./routes/product";
-import uploadRouter from "./routes/upload";
+// import uploadRouter from "./routes/upload";
+import categoryRouter from "./routes/category";
 
 const app: Application = express();
 dotenv.config();
@@ -20,6 +21,7 @@ app.use(cors())
 
 app.use("/api", productRouter);
 app.use("/api", authRouter);
-app.use("/api", uploadRouter);
+app.use("/api", authRouter);
+app.use("/api", categoryRouter);
 
 export const viteNodeApp: Application = app;

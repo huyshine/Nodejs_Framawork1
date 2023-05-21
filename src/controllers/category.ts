@@ -1,81 +1,115 @@
 import Category from "../models/category";
 import { Request, Response } from 'express';
+import { categorySchema } from "../schemas/category.js";
 
-export const get = async (req: Request, res: Response) => {
-    const categoryId = req.params.id;
-    const { _page = 1, _limit = 10, _sort = "createdAt", _order = "asc", _embed } = req.query;
-    const options = {
-        page: _page,
-        limit: _limit,
-        sort: { [_sort as string]: _order === "desc" ? -1 : 1 },
-    };
-    const populateOptions = _embed ? [{ path: "categoryId", select: "name" }] : [];
-    try {
-        const category = await Category.findOne({ _id: categoryId });
-        if (!category) {
-            return res.status(404).json({
-                message: "Category not found",
-            });
-        }
-        const result: any = await Category.paginate(
-            { categoryId },
-            { ...options, populate: populateOptions }
-        );
 
-        if (result.docs.length === 0) {
-            return res.status(404).json({
-                message: "No products found in this category",
-            });
-        }
-        if (_embed) {
-            return res.json({
-                data: {
-                    category,
-                    products: result.docs,
-                },
-                pagination: {
-                    currentPage: result.page,
-                    totalPages: result.totalPages,
-                    totalItems: result.totalDocs,
-                },
-            });
-        } else {
-            return res.status(200).json({
-                data: result.docs,
-                pagination: {
-                    currentPage: result.page,
-                    totalPages: result.totalPages,
-                    totalItems: result.totalDocs,
-                },
-            });
-        }
-    } catch (error) {
-        return res.status(400).json({
-            message: error.message,
-        });
+export const getAll = async (req : Request, res : Response) => {
+  try {
+    const categories = await Category.find().populate("products");
+    if (categories.length === 0) {
+      return res.status(200).json({
+        message: "Không có category nào",
+        data: [],
+      });
     }
+    return res.status(200).json({
+      message: "Lay danh sach thanh cong",
+      datas: [...categories],
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: error,
+      datas: [],
+    });
+  }
 };
-export const remove = async (req, res) => {
-    try {
-        const id = req.params.id;
-        const category = await Category.findByIdAndDelete(id);
-        if (!category) {
-            return res.status(404).json({
-                message: "Không tìm thấy sản phẩm",
-            });
-        }
-        if (!category.isDeleteable) {
-            return res.status(400).send({ message: 'Không thể xóa danh mục này' });
-        }
-        return res.status(200).json({
-            message: "Xóa danh mục thành công",
-            category
-        });
-    } catch (error) {
-        res.status(400).json({
-            message: "Xóa sản phẩm thất bại",
-            error: error.message,
-        });
+export const get = async function (req : Request, res : Response) {
+  try {
+    const category = await Category.findById(req.params.id).populate(
+      "products"
+    );
+    if (!category) {
+      return res.json({
+        message: "Không có category nào",
+        datas: [],
+      });
     }
+    return res.json({
+      message: "Lay category thanh cong!",
+      datas: category,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: error,
+      datas: [],
+    });
+  }
+};
+export const create = async function (req : Request, res : Response) {
+  try {
+    const { error } = categorySchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        message: error.details[0].message,
+        datas: [],
+      });
+    }
+    const category = await Category.create(req.body);
+    if (!category) {
+      return res.json({
+        message: "Thêm category không thành công!",
+        datas: [],
+      });
+    }
+    return res.json({
+      message: "Thêm category thành công",
+      data: [category],
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: error,
+      datas: [],
+    });
+  }
+};
+export const updatePatch = async function (req : Request, res : Response) {
+  try {
+    const { error } = categorySchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        message: error.details[0].message,
+      });
+    }
+    const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    if (!category) {
+      return res.json({
+        message: "Cập nhật category không thành công",
+      });
+    }
+    return res.json({
+      message: "Cập nhật category thành công",
+      data: category,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: error,
+    });
+  }
+};
+export const remove = async function (req : Request, res : Response) {
+  try {
+    const category = await Category.findByIdAndDelete(req.params.id);
+    return res.json({
+      message: "Xóa category thành công",
+      category,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: error,
+    });
+  }
+};
 
-}
+  
