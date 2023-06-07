@@ -4,6 +4,7 @@ import joi from 'joi';
 export const productSchema = joi.object({
     name: joi.string().required(),
     price: joi.number().required().min(0),
+    image: joi.string().required(),
     description: joi.string(),
     categoryId: joi.string().required(),
     createdAt: joi.date().default(() => new Date()),

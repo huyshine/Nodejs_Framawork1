@@ -68,7 +68,7 @@ export const signin = async (req: Request, res: Response) => {
                 message: errors,
             });
         }
-        const user: IUser = await User.findOne({ email });
+        const user: any = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({ message: "Tài khoản không tồn tại" });
         }

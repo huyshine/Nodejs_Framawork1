@@ -8,6 +8,8 @@ import authRouter from "./routes/auth";
 import productRouter from "./routes/product";
 // import uploadRouter from "./routes/upload";
 import categoryRouter from "./routes/category";
+import orderRoutes from "./routes/order";
+
 
 const app: Application = express();
 dotenv.config();
@@ -21,7 +23,9 @@ app.use(cors())
 
 app.use("/api", productRouter);
 app.use("/api", authRouter);
-app.use("/api", authRouter);
+// app.use("/api", authRouter);
 app.use("/api", categoryRouter);
+app.use("/api", orderRoutes);
+
 
 export const viteNodeApp: Application = app;
